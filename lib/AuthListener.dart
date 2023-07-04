@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kafil/screens/HomePage.dart';
 import 'package:kafil/screens/LoginPage.dart';
+import 'package:kafil/screens/homePage.dart';
 
 class AuthListener extends StatefulWidget {
   const AuthListener({super.key});
@@ -15,7 +15,6 @@ class _AuthListenerState extends State<AuthListener> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    FirebaseAuth.instance.signOut(); 
   }
 
   @override
@@ -30,7 +29,7 @@ class _AuthListenerState extends State<AuthListener> {
         } else if (snapshot.hasData) {
           // User is signed in, redirect to home page
           print("i am connecting");
-          return HomePage();
+          return MyHomePage();
         } else {
           // User is not signed in, redirect to signup page
           print("i am out");
