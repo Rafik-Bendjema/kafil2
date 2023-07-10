@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kafil/admin_show/family_ad/gridOfActions/orphan_home.dart';
-import 'package:kafil/admin_show/family_ad/gridOfActions/stock.dart';
+
+
+import '../admin_show/gridOfActions/orphan_home.dart';
+import '../admin_show/gridOfActions/stock.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-import '../../../Services/Stock.dart';
+import '../../../../Services/Stock.dart';
 
 class My_stock extends StatefulWidget {
   const My_stock({super.key});

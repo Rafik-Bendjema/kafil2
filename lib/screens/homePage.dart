@@ -1,10 +1,11 @@
-
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kafil/ui/Family_page.dart';
 import 'package:kafil/ui/actions.dart';
-import 'package:kafil/ui/home.dart';
 import 'package:kafil/ui/employee.dart';
+
+import '../ui/add_family.dart';
 
 class MyHomePage extends StatefulWidget {
 
@@ -14,7 +15,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int selectedpage =0;
-  final _pageNo = [Home() , CartPage() , ProfilePage()];
+  final _pageNo = [FamilyPage() , CartPage() , ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
