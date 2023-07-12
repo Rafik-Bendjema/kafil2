@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../Services/Family.dart';
 
@@ -26,10 +27,12 @@ class _FamilyEditorState extends State<FamilyEditor> {
   TextEditingController kidsAgeController = TextEditingController();
   TextEditingController kidsWorkController = TextEditingController();
   TextEditingController kidsSickController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
+
   bool fatherInLife = true;
   bool motherInLife = true;
   List<Kids> kids = [];
-
+  String _selectedloc = "";
   void check() {
     Family? init = widget.initialFamily;
     if (init != null) {
@@ -39,9 +42,11 @@ class _FamilyEditorState extends State<FamilyEditor> {
       motherNameController = TextEditingController(text: init.mother_name);
       fatherSickController = TextEditingController(text: init.father_sick);
       motherSickController = TextEditingController(text: init.mother_sick);
+      _selectedloc = init.location ; 
       fatherInLife = init.fatherInLife;
       motherInLife = init.motherInLife;
       kids = init.kids;
+      print("this is kids $kids");
     } else {
       print("it's null");
     }
@@ -90,7 +95,7 @@ class _FamilyEditorState extends State<FamilyEditor> {
   }
 
   void saveFamily(bool edit) {
-    print("this is kids $kids") ; 
+    print("this is kids $kids");
     final Family newFamily = Family(
       family_name: familyNameController.text,
       father_name: fatherNameController.text,
@@ -99,6 +104,7 @@ class _FamilyEditorState extends State<FamilyEditor> {
       mother_sick: motherSickController.text,
       fatherInLife: fatherInLife,
       motherInLife: motherInLife,
+      location: _selectedloc,
       kids: kids,
     );
     if (edit) {
@@ -140,7 +146,93 @@ class _FamilyEditorState extends State<FamilyEditor> {
                 decoration: InputDecoration(labelText: 'Family name'),
               ),
               SizedBox(
-                height: 10,
+                height: 18,
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: Color.fromARGB(142, 104, 58, 183),
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Location",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Color.fromARGB(255, 218, 218, 218)),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text("Pick a location"),
+                              content: Container(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "open the map and copy the location",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    TextButton(
+                                        onPressed: () async {
+                                          if (!await launchUrl(Uri.parse(
+                                              'https://www.google.com/maps'))) {
+                                            print("error");
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) =>
+                                                    AlertDialog(
+                                                      title: Text("error"),
+                                                      content: Text(
+                                                          "error opening the map"),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Text("OK"))
+                                                      ],
+                                                    ));
+                                          }
+                                        },
+                                        child: Text("OPEN THE Map")),
+                                    TextField(
+                                      decoration: InputDecoration(
+                                          hintText: 'past location here'),
+                                      controller: locationController,
+                                    )
+                                  ],
+                                ),
+                                width: 300,
+                                height: 300,
+                              ),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedloc = locationController.text;
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("save"))
+                              ],
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.map))
+                  ],
+                ),
+              ),
+              (_selectedloc != "")
+                  ? Text("Location is $_selectedloc")
+                  : SizedBox(
+                      height: 0,
+                    ),
+              SizedBox(
+                height: 18,
               ),
               Text(
                 'Father',

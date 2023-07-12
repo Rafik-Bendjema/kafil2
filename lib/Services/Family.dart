@@ -9,10 +9,12 @@ class Family {
   String father_sick;
   String mother_sick;
   List<Kids> kids;
+  String location;
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
   Family({
     required this.family_name,
+    required this.location,
     required this.father_name,
     required this.mother_name,
     required this.father_sick,
@@ -24,6 +26,7 @@ class Family {
   Map<String, dynamic> toMap() {
     return {
       'family_name': family_name,
+      'location': location,
       'father_name': father_name,
       'father_alive': fatherInLife,
       'father_sick': father_sick,
@@ -68,6 +71,29 @@ class Family {
       return false;
     }
     return true;
+  }
+
+  static Future<bool> delete_family(String doc) async {
+    bool return_val = true;
+    await FirebaseFirestore.instance
+        .collection('family')
+        .doc(doc)
+        .collection('kids')
+        .get()
+        .then((value) {
+      for (DocumentSnapshot doc in value.docs) {
+        doc.reference.delete();
+      }
+    });
+    await FirebaseFirestore.instance
+        .collection('family')
+        .doc(doc)
+        .delete()
+        .onError((error, stackTrace) {
+      print("error in deleting the doc n = $doc , error : $error");
+      return_val = false;
+    });
+    return return_val;
   }
 }
 

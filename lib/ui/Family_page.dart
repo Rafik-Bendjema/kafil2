@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kafil/Services/Family.dart';
 import 'package:kafil/ui/add_family.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FamilyPage extends StatefulWidget {
   const FamilyPage({Key? key}) : super(key: key);
@@ -97,12 +98,38 @@ class _FamilyPageState extends State<FamilyPage> {
                                     SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        Icon(Icons.location_on),
+                                        IconButton(
+                                          icon: Icon(Icons.location_on),
+                                          onPressed: () async {
+                                            if (!await launchUrl(Uri.parse(
+                                                "https://www.google.com/maps/place/${data['location']}"))) {
+                                              print("error");
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                        title: Text("error"),
+                                                        content: Text(
+                                                            "error opening the map"),
+                                                        actions: [
+                                                          TextButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: Text("OK"))
+                                                        ],
+                                                      ));
+                                            }
+                                          },
+                                        ),
                                         SizedBox(width: 4),
                                         IconButton(
                                           icon: Icon(Icons.edit,
                                               color: Colors.deepPurple),
                                           onPressed: () {
+                                            print(
+                                                "i am on the view and this is kids $kids");
                                             Family f = Family(
                                                 family_name:
                                                     data['family_name'],
@@ -118,6 +145,7 @@ class _FamilyPageState extends State<FamilyPage> {
                                                     data['father_alive'],
                                                 motherInLife:
                                                     data['mother_alive'],
+                                                location: data['location'],
                                                 kids: kids);
                                             Navigator.push(
                                                 context,
@@ -136,9 +164,9 @@ class _FamilyPageState extends State<FamilyPage> {
                                 ),
                                 trailing: IconButton(
                                   onPressed: () {
-                                    // Handle the action when the info button is pressed
+                                    Family.delete_family(document.id);
                                   },
-                                  icon: Icon(Icons.info_outlined),
+                                  icon: Icon(Icons.delete),
                                 ),
                               ),
                             ),
