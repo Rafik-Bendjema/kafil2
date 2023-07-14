@@ -73,27 +73,30 @@ class Family {
     return true;
   }
 
-  static Future<bool> delete_family(String doc) async {
-    bool return_val = true;
-    await FirebaseFirestore.instance
-        .collection('family')
-        .doc(doc)
-        .collection('kids')
-        .get()
-        .then((value) {
-      for (DocumentSnapshot doc in value.docs) {
-        doc.reference.delete();
-      }
-    });
-    await FirebaseFirestore.instance
-        .collection('family')
-        .doc(doc)
-        .delete()
-        .onError((error, stackTrace) {
-      print("error in deleting the doc n = $doc , error : $error");
-      return_val = false;
-    });
-    return return_val;
+  static Future<void> delete_family(String doc) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Create a batched write to perform multiple operations atomically
+    final WriteBatch batch = firestore.batch();
+
+    final DocumentReference familyRef = firestore.collection('family').doc(doc);
+
+    final CollectionReference kidsRef = familyRef.collection('kids');
+
+    // Query and delete all documents within the kids subcollection
+    final QuerySnapshot kidsSnapshot = await kidsRef.get();
+    for (final DocumentSnapshot kidDoc in kidsSnapshot.docs) {
+      batch.delete(kidDoc.reference);
+    }
+    // Delete the family document
+    batch.delete(familyRef);
+
+    // Get the kids subcollection reference
+
+    // Commit the batched write
+    await batch.commit();
+
+    print('Family and kids deleted successfully!');
   }
 }
 

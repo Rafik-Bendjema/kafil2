@@ -100,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           );
         },
-        child: Icon(Icons.add),
+        child: Image.asset('assets/add_employee.png'),
       ),
     );
   }
@@ -148,7 +148,6 @@ class AddEmployeeDialog extends StatelessWidget {
               phone: phoneController.text,
             );
 
-            // Call the onEmployeeAdded callback with the new employee
             onEmployeeAdded(employee);
           },
           child: Text('Add'),
@@ -236,11 +235,6 @@ class Employee {
   });
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: ProfilePage(),
-  ));
-}
 
 void _makePhoneCall(String phoneNumber) async {
   String url = 'tel:$phoneNumber';
