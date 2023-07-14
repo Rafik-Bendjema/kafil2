@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../Services/Employee.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -10,77 +13,92 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  List<Employee> employees = [];
-
+  Stream _stream =
+      FirebaseFirestore.instance.collection('Employees').snapshots();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        itemCount: employees.length,
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Card(
-                color: Colors.grey[400],
-                elevation: 0,
-                child: ListTile(
-                  title: Text(employees[index].name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Age: ${employees[index].age}'),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text('Number phone:'),
-                          SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              '0${employees[index].phone}',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _makePhoneCall('+213${employees[index].phone}');
-                            },
-                            icon: Icon(Icons.call,
-                                size: 40, color: Colors.green),
-                          ),
-                          Card(
-                            color: const Color.fromARGB(255, 161, 130, 75),
-                            child: IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                // Show the edit employee dialog
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return EditEmployeeDialog(
-                                      employee: employees[index],
-                                      onEmployeeUpdated: (updatedEmployee) {
-                                        // Update the employee details in the list
-                                        setState(() {
-                                          employees[index] = updatedEmployee;
-                                        });
-                                        Navigator.pop(
-                                            context); // Close the dialog
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: StreamBuilder(
+          stream: _stream,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Text('Something went wrong');
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text("Loading");
+            }
+            return ListView(
+                children: snapshot.data!.docs
+                    .map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data()! as Map<String, dynamic>;
+                      Employee e = Employee(
+                          name: data['full_name'],
+                          age: data['age'],
+                          phone: data['phone_number']);
+                      return Card(
+                        color: Colors.grey[400],
+                        elevation: 0,
+                        child: ListTile(
+                            title: Text(e.name),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Age: ${e.age}'),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text('Number phone:'),
+                                    SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        e.phone,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        _makePhoneCall(e.phone.toString());
                                       },
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+                                      icon:
+                                          Icon(Icons.call, color: Colors.green),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () {
+                                        // Show the edit employee dialog
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return EditEmployeeDialog(
+                                              employee: e,
+                                              doc: document.id,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                        onPressed: () {
+                                          Employee.delete_employee(document.id);
+                                        },
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ))
+                                  ],
+                                ),
+                              ],
+                            )),
+                      );
+                    })
+                    .toList()
+                    .cast<Widget>());
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -88,15 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return AddEmployeeDialog(
-                onEmployeeAdded: (employee) {
-                  // Add the new employee to the list
-                  setState(() {
-                    employees.add(employee);
-                  });
-                  Navigator.pop(context); // Close the dialog
-                },
-              );
+              return AddEmployeeDialog();
             },
           );
         },
@@ -107,10 +117,6 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 class AddEmployeeDialog extends StatelessWidget {
-  final Function(Employee) onEmployeeAdded;
-
-  AddEmployeeDialog({required this.onEmployeeAdded});
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -144,11 +150,12 @@ class AddEmployeeDialog extends StatelessWidget {
             // Create a new Employee object
             Employee employee = Employee(
               name: nameController.text,
-              age: int.tryParse(ageController.text) ?? 0,
+              age: ageController.text ?? "",
               phone: phoneController.text,
             );
 
-            onEmployeeAdded(employee);
+            employee.add_employee();
+            Navigator.pop(context);
           },
           child: Text('Add'),
         ),
@@ -159,9 +166,8 @@ class AddEmployeeDialog extends StatelessWidget {
 
 class EditEmployeeDialog extends StatefulWidget {
   final Employee employee;
-  final Function(Employee) onEmployeeUpdated;
-
-  EditEmployeeDialog({required this.employee, required this.onEmployeeUpdated});
+  final String doc;
+  EditEmployeeDialog({required this.employee, required this.doc});
 
   @override
   _EditEmployeeDialogState createState() => _EditEmployeeDialogState();
@@ -178,6 +184,7 @@ class _EditEmployeeDialogState extends State<EditEmployeeDialog> {
     nameController = TextEditingController(text: widget.employee.name);
     ageController = TextEditingController(text: widget.employee.age.toString());
     phoneController = TextEditingController(text: widget.employee.phone);
+    print("this is the doc for editing the employee ${widget.doc}");
   }
 
   @override
@@ -209,12 +216,13 @@ class _EditEmployeeDialogState extends State<EditEmployeeDialog> {
             // Create a new Employee object with updated details
             Employee updatedEmployee = Employee(
               name: nameController.text,
-              age: int.tryParse(ageController.text) ?? 0,
+              age: ageController.text ?? "",
               phone: phoneController.text,
             );
-
+            print("this is the new age ${updatedEmployee.age}");
             // Call the onEmployeeUpdated callback with the updated employee
-            widget.onEmployeeUpdated(updatedEmployee);
+            updatedEmployee.edit_employee(widget.doc);
+            Navigator.pop(context);
           },
           child: Text('Update'),
         ),
@@ -222,19 +230,6 @@ class _EditEmployeeDialogState extends State<EditEmployeeDialog> {
     );
   }
 }
-
-class Employee {
-  String name;
-  int age;
-  String phone;
-
-  Employee({
-    required this.name,
-    required this.age,
-    required this.phone,
-  });
-}
-
 
 void _makePhoneCall(String phoneNumber) async {
   String url = 'tel:$phoneNumber';
