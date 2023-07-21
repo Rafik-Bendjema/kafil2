@@ -2,28 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../Services/Family.dart';
-import 'beauty_item_look.dart';
 
-class GetFamilies extends StatefulWidget {
-  String doc_id;
-  GetFamilies({required this.doc_id});
+late Family? selected_fam = null;
+
+class ShowFamilies extends StatefulWidget {
+  final bool Check_box;
+  ShowFamilies({required this.Check_box});
   @override
-  State<GetFamilies> createState() => _GetFamiliesState();
+  State<ShowFamilies> createState() => _ShowFamiliesState();
 }
 
-class _GetFamiliesState extends State<GetFamilies> {
-  Map<String, String?> selectedFamilies = {};
-
-  late Stream<QuerySnapshot> _familiesStream;
-
-  void initState() {
-    super.initState();
-    _familiesStream = FirebaseFirestore.instance
-        .collection('Events')
-        .doc(widget.doc_id)
-        .collection('families')
-        .snapshots();
-  }
+class _ShowFamiliesState extends State<ShowFamilies> {
+  final Stream<QuerySnapshot> _familiesStream =
+      FirebaseFirestore.instance.collection('family').snapshots();
 
   Future<List<Kids>> change(
       DocumentSnapshot familyDocument, String familyId) async {
@@ -50,6 +41,13 @@ class _GetFamiliesState extends State<GetFamilies> {
     return kidsSnapshot.docs;
   }
 
+  bool check(String doc_id) {
+    if (selected_fam == null) {
+      return false;
+    }
+    return doc_id.compareTo(selected_fam!.doc_id) == 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,7 +56,7 @@ class _GetFamiliesState extends State<GetFamilies> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              "العائلات المستفيدة",
+              "Families",
               style: TextStyle(fontSize: 35),
             ),
           ),
@@ -100,11 +98,42 @@ class _GetFamiliesState extends State<GetFamilies> {
 
                         Map<String, dynamic> data =
                             document.data()! as Map<String, dynamic>;
+                        Family f = Family.custom(
+                            family_name: data['family_name'],
+                            location: data['location'],
+                            father_name: data['father_name'],
+                            mother_name: data['mother_name'],
+                            father_sick: data['father_sick'],
+                            mother_sick: data['mother_sick'],
+                            fatherInLife: data['father_alive'],
+                            motherInLife: data['mother_alive'],
+                            doc_id: document.id);
                         return Column(
                           children: [
                             Card(
                               child: ListTile(
-                                title: Text(data['family_name']),
+                                title: Text(f.family_name),
+                                subtitle: Center(
+                                    child: Column(
+                                  children: [
+                                    if (widget.Check_box == true)
+                                      Checkbox(
+                                          value: check(familyId),
+                                          onChanged: ((value) {
+                                            print(
+                                                "fam id : $familyId .... selected : $selected_fam");
+                                            if (value == false) {
+                                              setState(() {
+                                                selected_fam = null;
+                                              });
+                                            } else {
+                                              setState(() {
+                                                selected_fam = f;
+                                              });
+                                            }
+                                          }))
+                                  ],
+                                )),
                               ),
                             ),
                           ],

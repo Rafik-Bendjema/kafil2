@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:kafil/Services/Events.dart';
 import 'package:kafil/ui/stock.dart';
+import 'package:kafil/widget/add_family_event.dart';
 import 'package:kafil/widget/stockwithSearch.dart';
 import '../widget/basics_fam_info.dart';
 
 class MaterialScreen extends StatelessWidget {
-  MaterialScreen({required this.titleController});
+  MaterialScreen({required this.titleController, required this.event});
   final String titleController;
+  final Events event;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +36,13 @@ class MaterialScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AddFamilyEvent(e: event,)));
+        },
+        child: Icon(Icons.add),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
@@ -40,28 +50,11 @@ class MaterialScreen extends StatelessWidget {
             Container(
                 height: 2, width: double.infinity, color: Colors.deepPurple),
             SizedBox(height: 28),
-            Container(height: 300, child: StockwithSearch()),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (BuildContext context) {
-                  return My_stock();
-                }));
-              },
-              child: Text(
-                'See Stock',
-                textAlign: TextAlign.left,
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-                height: 2, width: double.infinity, color: Colors.deepPurple),
-            SizedBox(height: 8),
-            Container(
-              height: 300,
-              child: GetFamilies(
-                Check_box: true,
+            Expanded(
+              child: Container(
+                child: GetFamilies(
+                  doc_id: event.doc_id,
+                ),
               ),
             )
           ],

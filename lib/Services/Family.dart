@@ -8,7 +8,8 @@ class Family {
   bool motherInLife;
   String father_sick;
   String mother_sick;
-  List<Kids> kids;
+  late List<Kids> kids;
+  late String doc_id ; 
   String location;
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -22,6 +23,17 @@ class Family {
     required this.fatherInLife,
     required this.motherInLife,
     required this.kids,
+  });
+  Family.custom({
+    required this.family_name,
+    required this.location,
+    required this.father_name,
+    required this.mother_name,
+    required this.father_sick,
+    required this.mother_sick,
+    required this.fatherInLife,
+    required this.motherInLife,
+    required this.doc_id
   });
   Map<String, dynamic> toMap() {
     return {

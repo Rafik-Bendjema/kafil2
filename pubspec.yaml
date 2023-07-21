@@ -42,7 +42,8 @@ dependencies:
   intl: 
   url_launcher: 
   timeago: 
-
+  flutter_riverpod:
+  flutter_hooks:
 dev_dependencies:
   flutter_test:
     sdk: flutter

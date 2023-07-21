@@ -21,7 +21,7 @@ class _MyHomePageState extends State<MyHomePage> {
     FamilyPage(),
     MyItems(),
     ProfilePage(),
-    houses(),
+    //houses(),
     Camp(),
     My_stock()
   ];
@@ -37,11 +37,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: _pageNo[selectedpage],
         bottomNavigationBar: ConvexAppBar(
+          height: 80,
           items: [
-            TabItem(icon: Icons.family_restroom, title: 'العائلات'),
+            TabItem(icon: Icons.family_restroom, title: 'العائلات' , ),
             TabItem(icon: Icons.volunteer_activism_rounded, title: 'نشاطات'),
             TabItem(icon: Icons.group, title: 'الأعضاء'),
-            TabItem(icon: Icons.home, title: 'المنازل'),
+            //  TabItem(icon: Icons.home, title: 'المنازل'),
             TabItem(icon: Icons.forest, title: 'التخييمات'),
             TabItem(icon: Icons.store, title: 'المخزن'),
           ],

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:kafil/Services/Events.dart';
 import 'package:kafil/screens/material_item_screen.dart';
 
 import '../Services/Family.dart';
@@ -13,71 +14,92 @@ class MyItems extends StatefulWidget {
 }
 
 class _MyItemsState extends State<MyItems> {
-  List<Item> itemList = [];
+  final Stream<QuerySnapshot> _event_stream =
+      FirebaseFirestore.instance.collection('Events').snapshots();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Add Event",
-          style: TextStyle(color: Colors.teal, fontSize: 30),
+        appBar: AppBar(
+          title: Text(
+            "Add Event",
+            style: TextStyle(color: Colors.teal, fontSize: 30),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          var newItem = await showDialog<Item>(
-            context: context,
-            builder: (BuildContext context) => ItemDialog(),
-          );
-          if (newItem != null) {
-            setState(() {
-              itemList.add(newItem);
-            });
-          }
-        },
-        child: Image.asset('assets/add_item.png'),
-      ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            var newItem = await showDialog<Events>(
+              context: context,
+              builder: (BuildContext context) => ItemDialog(),
+            );
+          },
+          child: Image.asset('assets/add_item.png'),
         ),
-        itemCount: itemList.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (BuildContext Context) {
-                      return MaterialScreen(
-                          titleController: itemList[index].name);
-                    }));
-                  },
-                  icon: Icon(itemList[index].iconData),
-                  iconSize: 40,
-                  color: itemList[index].color,
-                ),
-                SizedBox(height: 5),
-                Text(
-                  itemList[index].name,
-                  style: TextStyle(
-                    color: itemList[index].color,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+        body: StreamBuilder<QuerySnapshot>(
+          stream: _event_stream,
+          builder:
+              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) {
+              return const Text('Something went wrong');
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text("Loading");
+            }
+
+            return GridView(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Number of columns in the grid
+                mainAxisSpacing: 10.0, // Spacing between rows
+                crossAxisSpacing: 10.0, // Spacing between columns
+                childAspectRatio: 1.0, // Aspect ratio of grid items
+              ),
+              children: snapshot.data!.docs
+                  .map((DocumentSnapshot document) {
+                  
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+                    var color = int.parse("0x${data['color']}");
+                    Events e = Events(
+                        Color(color),
+                        data['icon'],
+                        data['name'] , 
+                        doc_id: document.id
+                        );
+                    return Card(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (BuildContext Context) {
+                                return MaterialScreen(titleController: e.name , event : e);
+                              }));
+                            },
+                            icon: Icon(IconData(e.icon , fontFamily: 'MaterialIcons')),
+                            iconSize: 40,
+                            color: e.color,
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            e.name,
+                            style: TextStyle(
+                              color: e.color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  })
+                  .toList()
+                  .cast(),
+            );
+          },
+        ));
   }
 }
 
@@ -87,7 +109,7 @@ class ItemDialog extends StatefulWidget {
 }
 
 class _ItemDialogState extends State<ItemDialog> {
-  final TextEditingController itemNameController = TextEditingController();
+  final TextEditingController NameController = TextEditingController();
   IconData selectedIcon = Icons.add;
   Color selectedColor = Colors.teal;
 
@@ -99,7 +121,7 @@ class _ItemDialogState extends State<ItemDialog> {
         child: Column(
           children: [
             TextField(
-              controller: itemNameController,
+              controller: NameController,
               decoration: InputDecoration(labelText: 'Item Name'),
             ),
             SizedBox(height: 10),
@@ -158,10 +180,12 @@ class _ItemDialogState extends State<ItemDialog> {
         ),
         TextButton(
           onPressed: () {
-            String itemName = itemNameController.text;
+            String eventName = NameController.text;
+           print( selectedIcon.codePoint) ; 
+            Events e = Events(selectedColor, selectedIcon.codePoint, eventName);
+            e.add_event();
             Navigator.pop(
               context,
-              Item(itemName, selectedIcon, selectedColor),
             );
           },
           child: Text('Save'),
@@ -251,12 +275,4 @@ class ColorPickerDialog extends StatelessWidget {
       ),
     );
   }
-}
-
-class Item {
-  final String name;
-  final IconData iconData;
-  final Color color;
-
-  Item(this.name, this.iconData, this.color);
 }

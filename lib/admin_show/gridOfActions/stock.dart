@@ -59,7 +59,9 @@ class _My_stockState extends State<My_stock> {
                       DateTime add_date = data['Add_date'].toDate();
                       DateTime exp_date = data['exp_date'].toDate();
                       Stock produit = Stock(data['Product_name'], exp_date,
-                          add_date, data['Quantity']);
+                          add_date, data['Quantity'] , 
+                          data['unit']
+                          );
 
                       return Card(
                         color: Colors.grey[400],
@@ -186,6 +188,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   late TextEditingController nameController;
   late TextEditingController quantityController;
   late TextEditingController dateController;
+  String _selecteditem = "unit" ;  
 
   late DateTime selectedDate;
 
@@ -193,7 +196,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.stock.product_name);
-    quantityController = TextEditingController(text: widget.stock.quantity);
+    quantityController = TextEditingController(text: widget.stock.quantity.toString());
     selectedDate = widget.stock.expiry_date;
     dateController = TextEditingController(
         text: DateFormat.yMMMd().format(widget.stock.expiry_date));
@@ -225,10 +228,40 @@ class _EditProductDialogState extends State<EditProductDialog> {
             controller: nameController,
             decoration: InputDecoration(labelText: 'product name'),
           ),
-          TextField(
-            controller: quantityController,
-            decoration: InputDecoration(labelText: 'quantity'),
-          ),
+          Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: quantityController,
+                    decoration: InputDecoration(labelText: 'Quantity'),
+                  ),
+                ),
+                SizedBox(
+                  width: 60,
+                  child: DropdownButton(
+                      value: _selecteditem,
+                      items: [
+                        DropdownMenuItem(
+                          child: Text("kg"),
+                          value: "kg",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("l"),
+                          value: "l",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("unit"),
+                          value: "unit",
+                        ),
+                      ],
+                      onChanged: (index) {
+                        setState(() {
+                          _selecteditem = index!;
+                        });
+                      }),
+                )
+              ],
+            ),
           TextField(
             controller: dateController,
             decoration: InputDecoration(labelText: 'expiry date'),
@@ -241,7 +274,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
         TextButton(
           onPressed: () {
             Stock updateStock = Stock(nameController.text, selectedDate,
-                widget.stock.added_date, quantityController.text);
+                widget.stock.added_date,double.parse(quantityController.text), _selecteditem );
             updateStock.edit(widget.doc_id);
             Navigator.pop(context);
           },
@@ -266,6 +299,8 @@ class addProductDialog extends StatefulWidget {
 }
 
 class _addProductDialogState extends State<addProductDialog> {
+    String _selecteditem = "unit" ; 
+
   @override
   void initState() {
     super.initState();
@@ -299,10 +334,40 @@ class _addProductDialogState extends State<addProductDialog> {
             controller: widget.nameController,
             decoration: InputDecoration(labelText: 'product name'),
           ),
-          TextField(
-            controller: widget.quantityController,
-            decoration: InputDecoration(labelText: 'Quantity'),
-          ),
+         Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: widget.quantityController,
+                    decoration: InputDecoration(labelText: 'Quantity'),
+                  ),
+                ),
+                SizedBox(
+                  width: 60,
+                  child: DropdownButton(
+                      value: _selecteditem,
+                      items: [
+                        DropdownMenuItem(
+                          child: Text("kg"),
+                          value: "kg",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("l"),
+                          value: "l",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("unit"),
+                          value: "unit",
+                        ),
+                      ],
+                      onChanged: (index) {
+                        setState(() {
+                          _selecteditem = index!;
+                        });
+                      }),
+                )
+              ],
+            ),
           TextField(
             controller: widget.dateController,
             decoration: InputDecoration(labelText: 'expiry date'),
@@ -318,7 +383,8 @@ class _addProductDialogState extends State<addProductDialog> {
                 widget.nameController.text,
                 widget.selectedDate,
                 DateTime.now(),
-                widget.quantityController.text);
+                double.parse(widget.quantityController.text) , 
+                _selecteditem);
             updateStock.AddProduct();
             Navigator.pop(context);
           },

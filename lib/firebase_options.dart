@@ -69,7 +69,8 @@ class DefaultFirebaseOptions {
     projectId: 'kafil-e32f1',
     databaseURL: 'https://kafil-e32f1-default-rtdb.firebaseio.com',
     storageBucket: 'kafil-e32f1.appspot.com',
-    iosClientId: '1070069241989-gfl81fb3v1rujdam93f2dooltjhba2rj.apps.googleusercontent.com',
+    iosClientId:
+        '1070069241989-gfl81fb3v1rujdam93f2dooltjhba2rj.apps.googleusercontent.com',
     iosBundleId: 'com.example.kafil',
   );
 
@@ -80,7 +81,8 @@ class DefaultFirebaseOptions {
     projectId: 'kafil-e32f1',
     databaseURL: 'https://kafil-e32f1-default-rtdb.firebaseio.com',
     storageBucket: 'kafil-e32f1.appspot.com',
-    iosClientId: '1070069241989-2tgnoerk3cl29f43u7gck72hoeqll7q1.apps.googleusercontent.com',
+    iosClientId:
+        '1070069241989-2tgnoerk3cl29f43u7gck72hoeqll7q1.apps.googleusercontent.com',
     iosBundleId: 'com.example.kafil.RunnerTests',
   );
 }
