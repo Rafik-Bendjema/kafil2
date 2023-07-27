@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kafil/Services/Events.dart';
+import 'package:kafil/Services/Stock.dart';
 import 'package:kafil/widget/ProductsList.dart';
 import 'package:kafil/widget/stockDialog.dart';
 
@@ -16,6 +17,14 @@ class AddFamilyEvent extends ConsumerStatefulWidget {
 }
 
 class _AddFamilyEventState extends ConsumerState<AddFamilyEvent> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchAndAddProductsToProvider(ref, context);
+    print("i am rebulding add family page"); 
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(

@@ -23,12 +23,10 @@ class Events {
         .collection('Events')
         .doc(doc_id)
         .collection('families')
-        .add({'family_name': fam_name, 'products': products}); 
+        .add({'family_name': fam_name, 'products': products});
   }
 
   Future<void> add_event() async {
-    await db.collection('Events').add(this.toMap()).then((value) {
-      value.collection('families').add({});
-    });
+    await db.collection('Events').add(this.toMap());
   }
 }
